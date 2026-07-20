@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Loan Default Risk Predictor</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 600px; margin: 40px auto; padding: 20px; background: #f5f5f5; }
+        h1 { color: #333; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; color: #555; }
+        input, select { width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { background: #4CAF50; color: white; padding: 12px 20px; border: none; border-radius: 4px; cursor: pointer; width: 100%; font-size: 16px; }
+        button:hover { background: #45a049; }
+        #result { margin-top: 20px; padding: 15px; border-radius: 4px; display: none; }
+        .high-risk { background: #ffebee; border: 1px solid #f44336; color: #c62828; }
+        .low-risk { background: #e8f5e9; border: 1px solid #4CAF50; color: #2e7d32; }
+    </style>
+</head>
+<body>
+    <h1>Loan Default Risk Predictor</h1>
+    <p>Fill in the applicant details below to estimate default risk.</p>
+
+    <form id="predictForm">
+        <div class="form-group">
+            <label>Age (years)</label>
+            <input type="number" name="age" value="35" required>
+        </div>
+        <div class="form-group">
+            <label>Years Employed</label>
+            <input type="number" name="years_employed" value="5" required>
+        </div>
+        <div class="form-group">
+            <label>Annual Income</label>
+            <input type="number" name="amt_income_total" value="150000" required>
+        </div>
+        <div class="form-group">
+            <label>Loan Credit Amount</label>
+            <input type="number" name="amt_credit" value="500000" required>
+        </div>
+        <div class="form-group">
+            <label>Annuity (Monthly Payment)</label>
+            <input type="number" name="amt_annuity" value="25000" required>
+        </div>
+        <div class="form-group">
+            <label>Goods Price</label>
+            <input type="number" name="amt_goods_price" value="450000" required>
+        </div>
+        <div class="form-group">
+            <label>Gender</label>
+            <select name="gender">
+                <option value="M">Male</option>
+                <option value="F">Female</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Education</label>
+            <select name="education">
+                <option value="Secondary / secondary special">Secondary</option>
+                <option value="Higher education">Higher Education</option>
+                <option value="Incomplete higher">Incomplete Higher</option>
+                <option value="Lower secondary">Lower Secondary</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Family Status</label>
+            <select name="family_status">
+                <option value="Married">Married</option>
+                <option value="Single / not married">Single</option>
+                <option value="Civil marriage">Civil Marriage</option>
+                <option value="Widow">Widow</option>
+            </select>
+        </div>
+        <div class="form-group">
+            <label>Owns a Car?</label>
+            <select name="own_car">
+                <option value="N">No</option>
+                <option value="Y">Yes</option>
+            </select>
+        </div>
+
+        <button type="submit">Predict Default Risk</button>
+    </form>
+
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('predictForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const formData = new FormData(e.target);
+            const data = Object.fromEntries(formData);
+
+            const response = await fetch('/predict', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            const result = await response.json();
+            const resultDiv = document.getElementById('result');
+
+            if (result.error) {
+                resultDiv.className = 'high-risk';
+                resultDiv.innerHTML = `Error: ${result.error}`;
+            } else {
+                resultDiv.className = result.risk_level === 'High Risk' ? 'high-risk' : 'low-risk';
+                resultDiv.innerHTML = `
+                    <strong>Default Probability:</strong> ${result.risk_percentage}<br>
+                    <strong>Risk Level:</strong> ${result.risk_level}
+                `;
+            }
+            resultDiv.style.display = 'block';
+        });
+    </script>
+</body>
+</html>
