@@ -33,5 +33,5 @@ def predict_default_risk(user_input: dict):
         if col in df.columns:
             df[col] = df[col].astype('category')
 
-    prob = model.predict(df)[0]
+    prob = model.predict(df, num_threads=1)[0]
     return float(prob)
